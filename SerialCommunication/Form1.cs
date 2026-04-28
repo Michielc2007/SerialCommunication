@@ -54,7 +54,16 @@ namespace SerialCommunication
 
         private void buttonConnect_Click(object sender, EventArgs e)
         {
-            // abc def ghi jkl
+           // abc def ghi jkl
+           if (serialPortArduino.IsOpen)
+            {
+                // ik heb een verbinding -> de gerbuiker wil deze verbinden
+            }
+           else
+            {
+                //
+            }
         }
+
     }
 }
