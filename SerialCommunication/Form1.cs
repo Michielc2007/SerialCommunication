@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
@@ -68,8 +69,8 @@ namespace SerialCommunication
                 else
                 {
                     // ik heb geen verbinding -> de gebruiker wil een verbinding maken
-                    serialPortArduino.PortName =(string) comboBoxPoort.SelectedItem;
-                    serialPortArduino.BaudRate = Int32.Parse((string) comboBoxBaudrate.SelectedItem);
+                    serialPortArduino.PortName = (string)comboBoxPoort.SelectedItem;
+                    serialPortArduino.BaudRate = Int32.Parse((string)comboBoxBaudrate.SelectedItem);
                     serialPortArduino.DataBits = (int)numericUpDownDatabits.Value;
 
                     if (radioButtonParityEven.Checked) serialPortArduino.Parity = Parity.Even;
@@ -81,7 +82,7 @@ namespace SerialCommunication
                     if (radioButtonStopbitsNone.Checked) serialPortArduino.StopBits = StopBits.None;
                     else if (radioButtonStopbitsOne.Checked) serialPortArduino.StopBits = StopBits.One;
                     else if (radioButtonStopbitsOnePointFive.Checked) serialPortArduino.StopBits = StopBits.OnePointFive;
-                    else if (radioButtonStopbitsTwo.Checked) serialPortArduino.StopBits=StopBits.Two;
+                    else if (radioButtonStopbitsTwo.Checked) serialPortArduino.StopBits = StopBits.Two;
 
                     if (radioButtonHandshakeNone.Checked) serialPortArduino.Handshake = Handshake.None;
                     else if (radioButtonHandshakeRTS.Checked) serialPortArduino.Handshake = Handshake.RequestToSend;
@@ -91,13 +92,13 @@ namespace SerialCommunication
                     serialPortArduino.RtsEnable = checkBoxRtsEnable.Checked;
                     serialPortArduino.DtrEnable = checkBoxDtrEnable.Checked;
 
-                    serialPortArduino.Open(); 
+                    serialPortArduino.Open();
                     string commando = "ping";
-                    serialPortArduino.WriteLine( commando );
+                    serialPortArduino.WriteLine(commando);
                     string antwoord = serialPortArduino.ReadLine();
                     antwoord = antwoord.Trim(); // verwijdert spaties vooraan en achteraan maar ook speciale tekens zoals \r
 
-                    if (antwoord  == "pong")
+                    if (antwoord == "pong")
                     {
                         radioButtonVerbonden.Checked = true;
                         buttonConnect.Text = "disconnect";
@@ -112,14 +113,149 @@ namespace SerialCommunication
 
                 }
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 labelStatus.Text = "error: " + exception.Message;
                 serialPortArduino.Close();
                 radioButtonVerbonden.Checked = false;
-                buttonConnect.Text = "Connect"; 
+                buttonConnect.Text = "Connect";
             }
         }
 
+        private void checkBoxDigital2_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set d2 high/low
+                    if (checkBoxDigital2.Checked) commando = "set d2 high";
+                    else commando = "set d2 low";
+                    serialPortArduino.WriteLine(commando);
+
+                }
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+
+        private void checkBoxDigital3_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set d3 high/low
+                    if (checkBoxDigital3.Checked) commando = "set d3 high";
+                    else commando = "set d3 low";
+                    serialPortArduino.WriteLine(commando);
+
+                }
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+
+        private void checkBoxDigital4_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set d4 high/low
+                    if (checkBoxDigital4.Checked) commando = "set d4 high";
+                    else commando = "set d4 low";
+                    serialPortArduino.WriteLine(commando);
+
+                }
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+
+        private void trackBarPWM9_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set pwm9 value 0....255
+                    commando = "set pwm9 " + trackBarPWM9.Value;
+                    serialPortArduino.WriteLine(commando);
+                }
+
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+
+        private void trackBarPWM10_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set pwm10 value 0....255
+                    commando = "set pwm10 " + trackBarPWM10.Value;
+                    serialPortArduino.WriteLine(commando);
+                }
+
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+    
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void trackBarPWM11_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    string commando; // set pwm11 value 0....255
+                    commando = "set pwm11 " + trackBarPWM11.Value;
+                    serialPortArduino.WriteLine(commando);
+                }
+
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
     }
 }
+
