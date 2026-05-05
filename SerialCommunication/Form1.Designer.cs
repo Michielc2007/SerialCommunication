@@ -92,6 +92,7 @@
             this.serialPortArduino = new System.IO.Ports.SerialPort(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timerOefening3 = new System.Windows.Forms.Timer(this.components);
+            this.timerOefening4 = new System.Windows.Forms.Timer(this.components);
             this.tabControl.SuspendLayout();
             this.tabPageInstellingen.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -772,6 +773,7 @@
             this.labelAnalog0.TabIndex = 1;
             this.labelAnalog0.Text = "1023";
             this.labelAnalog0.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
             // 
             // pictureBox4
             // 
@@ -885,6 +887,11 @@
             // 
             this.timerOefening3.Interval = 1000;
             this.timerOefening3.Tick += new System.EventHandler(this.timerOefening3_Tick);
+            // 
+            // timerOefening4
+            // 
+            this.timerOefening4.Interval = 1000;
+            this.timerOefening4.Tick += new System.EventHandler(this.timerOefening4_Tick);
             // 
             // Form1
             // 
@@ -1000,6 +1007,7 @@
         private System.IO.Ports.SerialPort serialPortArduino;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Timer timerOefening3;
+        private System.Windows.Forms.Timer timerOefening4;
     }
 }
 
