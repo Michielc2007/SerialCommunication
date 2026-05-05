@@ -197,6 +197,7 @@ namespace SerialCommunication
                     string commando; // set pwm9 value 0....255
                     commando = "set pwm9 " + trackBarPWM9.Value;
                     serialPortArduino.WriteLine(commando);
+
                 }
 
             }
