@@ -95,6 +95,8 @@ namespace SerialCommunication
                     string commando = "ping";
                     serialPortArduino.WriteLine( commando );
                     string antwoord = serialPortArduino.ReadLine();
+                    antwoord = antwoord.Trim(); // verwijdert spaties vooraan en achteraan maar ook speciale tekens zoals \r
+
                     if (antwoord  == "pong")
                     {
                         radioButtonVerbonden.Checked = true;
