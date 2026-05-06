@@ -6,6 +6,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO.Ports;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -230,7 +231,7 @@ namespace SerialCommunication
                 buttonConnect.Text = "Connect";
             }
         }
-    
+
 
         private void label3_Click(object sender, EventArgs e)
         {
@@ -262,6 +263,7 @@ namespace SerialCommunication
         {
             timerOefening3.Enabled = tabControl.SelectedIndex == 3;
             timerOefening4.Enabled = tabControl.SelectedIndex == 4;
+            timerOefening5.Enabled = tabControl.SelectedIndex == 5;
         }
 
         private void timerOefening3_Tick(object sender, EventArgs e)
@@ -309,7 +311,7 @@ namespace SerialCommunication
         {
             try
             {
-               if (serialPortArduino.IsOpen)
+                if (serialPortArduino.IsOpen)
                 {
                     serialPortArduino.ReadExisting();
                     string commando = "get a0";
@@ -318,7 +320,7 @@ namespace SerialCommunication
                     antwoord = antwoord.Trim();
                     antwoord = antwoord.Substring(4);
                     int value = Int32.Parse(antwoord);
-                    labelAnalog0.Text=value.ToString();
+                    labelAnalog0.Text = value.ToString();
                 }
 
             }
@@ -330,6 +332,88 @@ namespace SerialCommunication
                 buttonConnect.Text = "Connect";
             }
         }
+
+
+        private void timerOefening5_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (serialPortArduino.IsOpen)
+                {
+                    serialPortArduino.ReadExisting();
+                    serialPortArduino.WriteLine("get a0");
+                    string antwoord = serialPortArduino.ReadLine().Trim();
+                    string[] delen = antwoord.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string token = delen.Length > 0 ? delen[delen.Length - 1] : antwoord;
+
+                    if (!int.TryParse(token, out int rawA0))
+                    {
+                        labelStatus.Text = "error: ongeldig antwoord a0";
+                        return;
+                    }
+
+                    // herschaal 0..10235 -> 5..45 °C
+                    double slope = (45.0 - 5.0) / 1023.0; // richtingscoëfficiënt
+                    double offset = 5.0;
+                    double desired = slope * rawA0 + offset;
+                    labelGewensteTemp.Text = Math.Round(desired, 1).ToString("0.0") + " °C";
+
+                    // read analog 1 and rescale 0..1023 -> 0..500 °C
+                    serialPortArduino.WriteLine("get a1");
+                    string antwoordA1 = serialPortArduino.ReadLine().Trim();
+                    string[] delenA1 = antwoordA1.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string tokenA1 = delenA1.Length > 0 ? delenA1[delenA1.Length - 1] : antwoordA1;
+
+                    if (!int.TryParse(tokenA1, out int rawA1))
+                    {
+                        labelStatus.Text = "error: ongeldig antwoord a1";
+                        return;
+                    }
+
+                    double slopeA1 = (26.0 - 18.0) / 1023.0; // richtingscoëfficiënt
+                    double offsetA1 = 18.0; // minimum temperatuur
+                    double current = slopeA1 * rawA1 + offsetA1;
+                    labelHuidigeTemp.Text = Math.Round(current, 1).ToString("0.0") + " °C";
+
+                    // read analog 2 as well and compare with a1
+                    serialPortArduino.WriteLine("get a2");
+                    string antwoordA2 = serialPortArduino.ReadLine().Trim();
+                    string[] delenA2 = antwoordA2.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    string tokenA2 = delenA2.Length > 0 ? delenA2[delenA2.Length - 1] : antwoordA2;
+
+                    if (!int.TryParse(tokenA2, out int rawA2))
+                    {
+                        labelStatus.Text = "error: ongeldig antwoord a2";
+                        return;
+                    }
+
+                    // bepaal LED-status: HIGH wanneer a1 == a2, anders HIGH wanneer current < desired
+                    bool ledOn = (rawA1 == rawA2) || (current < desired);
+                    try
+                    {
+                        checkBoxDigital2.CheckedChanged -= checkBoxDigital2_CheckedChanged;
+                        checkBoxDigital2.Checked = ledOn;
+                        checkBoxDigital2.CheckedChanged += checkBoxDigital2_CheckedChanged;
+
+                        if (ledOn) serialPortArduino.WriteLine("set d2 high");
+                        else serialPortArduino.WriteLine("set d2 low");
+                    }
+                    catch { }
+                   
+
+                }
+
+            }
+            catch (Exception exception)
+            {
+                labelStatus.Text = "error: " + exception.Message;
+                serialPortArduino.Close();
+                radioButtonVerbonden.Checked = false;
+                buttonConnect.Text = "Connect";
+            }
+        }
+
+
     }
 }
 

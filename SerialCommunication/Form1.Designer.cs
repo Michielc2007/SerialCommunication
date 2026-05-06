@@ -93,6 +93,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timerOefening3 = new System.Windows.Forms.Timer(this.components);
             this.timerOefening4 = new System.Windows.Forms.Timer(this.components);
+            this.timerOefening5 = new System.Windows.Forms.Timer(this.components);
             this.tabControl.SuspendLayout();
             this.tabPageInstellingen.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -773,7 +774,6 @@
             this.labelAnalog0.TabIndex = 1;
             this.labelAnalog0.Text = "1023";
             this.labelAnalog0.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-
             // 
             // pictureBox4
             // 
@@ -893,6 +893,11 @@
             this.timerOefening4.Interval = 1000;
             this.timerOefening4.Tick += new System.EventHandler(this.timerOefening4_Tick);
             // 
+            // timerOefening5
+            // 
+            this.timerOefening5.Interval = 1000;
+            this.timerOefening5.Tick += new System.EventHandler(this.timerOefening5_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1008,6 +1013,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Timer timerOefening3;
         private System.Windows.Forms.Timer timerOefening4;
+        private System.Windows.Forms.Timer timerOefening5;
     }
 }
 
