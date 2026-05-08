@@ -336,84 +336,95 @@ namespace SerialCommunication
 
         private void timerOefening5_Tick(object sender, EventArgs e)
         {
-            try
             {
-                if (serialPortArduino.IsOpen)
+                try
                 {
-                    serialPortArduino.ReadExisting();
-                    serialPortArduino.WriteLine("get a0");
-                    string antwoord = serialPortArduino.ReadLine().Trim();
-                    string[] delen = antwoord.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    string token = delen.Length > 0 ? delen[delen.Length - 1] : antwoord;
-
-                    if (!int.TryParse(token, out int rawA0))
+                    if (serialPortArduino.IsOpen)
                     {
-                        labelStatus.Text = "error: ongeldig antwoord a0";
-                        return;
+                        // --- 1. GEWENSTE TEMPERATUUR (Potmeter op A0) ---
+
+                        serialPortArduino.ReadExisting();
+
+                        serialPortArduino.WriteLine("get a0");
+
+                        string antwoord0 = serialPortArduino.ReadLine().TrimEnd();
+
+                        int ruweWaarde0 = Int32.Parse(antwoord0.Substring(4));
+
+                        // Herschalen naar het bereik 5..45 °C
+
+                        double gewensteTemp = (ruweWaarde0 * (40.0 / 1023.0)) + 5.0;
+
+                        labelGewensteTemp.Text = gewensteTemp.ToString("0.0") + " °C";
+
+                        // --- 2. HUIDIGE TEMPERATUUR (LM35 op A1) ---
+
+                        serialPortArduino.WriteLine("get a1");
+
+                        string antwoord1 = serialPortArduino.ReadLine().TrimEnd();
+
+                        int ruweWaarde1 = Int32.Parse(antwoord1.Substring(4));
+
+                        // We schalen de sensorwaarde zo dat het label ALTIJD tussen 18 en 26 graden blijft
+
+                        double weergaveTemp = (ruweWaarde1 * (8.0 / 1023.0)) + 18.0;
+
+                        labelHuidigeTemp.Text = weergaveTemp.ToString("0.0") + " °C";
+
+                        // --- 3. LED LOGICA ---
+
+                        if (gewensteTemp > weergaveTemp)
+                        {
+                            serialPortArduino.WriteLine("set d2 1"); // Lampje AAN
+                        }
+
+                        else
+                        {
+                            serialPortArduino.WriteLine("set d2 0"); // Lampje UIT
+                        }
                     }
-
-                    // herschaal 0..10235 -> 5..45 °C
-                    double slope = (45.0 - 5.0) / 1023.0; // richtingscoëfficiënt
-                    double offset = 5.0;
-                    double desired = slope * rawA0 + offset;
-                    labelGewensteTemp.Text = Math.Round(desired, 1).ToString("0.0") + " °C";
-
-                    // read analog 1 and rescale 0..1023 -> 0..500 °C
-                    serialPortArduino.WriteLine("get a1");
-                    string antwoordA1 = serialPortArduino.ReadLine().Trim();
-                    string[] delenA1 = antwoordA1.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    string tokenA1 = delenA1.Length > 0 ? delenA1[delenA1.Length - 1] : antwoordA1;
-
-                    if (!int.TryParse(tokenA1, out int rawA1))
+                    else
                     {
-                        labelStatus.Text = "error: ongeldig antwoord a1";
-                        return;
+                        // Als de poort niet open is, reset de UI
+
+                        labelStatus.Text = "Status: verbinding verbroken";
+
+                        radioButtonVerbonden.Checked = false;
+
+                        buttonConnect.Text = "Connect";
                     }
+                }
+                catch (Exception exception)
+                {
+                    // 1. Stop de timer direct om een herhalende lus van pop-ups te voorkomen
 
-                    double slopeA1 = (26.0 - 18.0) / 1023.0; // richtingscoëfficiënt
-                    double offsetA1 = 18.0; // minimum temperatuur
-                    double current = slopeA1 * rawA1 + offsetA1;
-                    labelHuidigeTemp.Text = Math.Round(current, 1).ToString("0.0") + " °C";
+                    timerOefening5.Stop();
 
-                    // read analog 2 as well and compare with a1
-                    serialPortArduino.WriteLine("get a2");
-                    string antwoordA2 = serialPortArduino.ReadLine().Trim();
-                    string[] delenA2 = antwoordA2.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    string tokenA2 = delenA2.Length > 0 ? delenA2[delenA2.Length - 1] : antwoordA2;
+                    // 2. Toon de foutmelding aan de gebruiker
 
-                    if (!int.TryParse(tokenA2, out int rawA2))
-                    {
-                        labelStatus.Text = "error: ongeldig antwoord a2";
-                        return;
-                    }
+                    MessageBox.Show("Verbinding verloren: " + exception.Message, "USB Fout",
 
-                    // bepaal LED-status: HIGH wanneer a1 == a2, anders HIGH wanneer current < desired
-                    bool ledOn = (rawA1 == rawA2) || (current < desired);
-                    try
-                    {
-                        checkBoxDigital2.CheckedChanged -= checkBoxDigital2_CheckedChanged;
-                        checkBoxDigital2.Checked = ledOn;
-                        checkBoxDigital2.CheckedChanged += checkBoxDigital2_CheckedChanged;
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                        if (ledOn) serialPortArduino.WriteLine("set d2 high");
-                        else serialPortArduino.WriteLine("set d2 low");
-                    }
-                    catch { }
-                   
+                    // 3. Reset de interface
+
+                    labelStatus.Text = "Error: " + exception.Message;
+
+                    try { serialPortArduino.Close(); } catch { }
+
+                    radioButtonVerbonden.Checked = false;
+
+                    buttonConnect.Text = "Connect";
 
                 }
 
             }
-            catch (Exception exception)
-            {
-                labelStatus.Text = "error: " + exception.Message;
-                serialPortArduino.Close();
-                radioButtonVerbonden.Checked = false;
-                buttonConnect.Text = "Connect";
-            }
+
         }
 
-
     }
+
+
 }
+
 
