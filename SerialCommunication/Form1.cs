@@ -373,7 +373,7 @@ namespace SerialCommunication
 
                         // --- 3. LED LOGICA ---
 
-                        if (gewensteTemp > weergaveTemp)
+                        if (gewensteTemp < weergaveTemp)
                         {
                             serialPortArduino.WriteLine("set d2 1"); // Lampje AAN
                         }
